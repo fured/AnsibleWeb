@@ -1,0 +1,5 @@
+[2019-11-11 20:09:49,997: INFO/MainProcess] Connected to redis://127.0.0.1:6379/10
+[2019-11-11 20:09:50,005: INFO/MainProcess] mingle: searching for neighbors
+[2019-11-11 20:09:51,011: INFO/MainProcess] mingle: all alone
+[2019-11-11 20:09:51,019: WARNING/MainProcess] celery@console.novalocal ready.
+[2019-11-11 20:09:54,814: INFO/MainProcess] Events of group {task} enabled by remote.

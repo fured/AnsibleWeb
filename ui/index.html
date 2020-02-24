@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AnsibleUI</title>
+      <meta charset="UTF-8">
+      <meta name="description" content="AnsibleUI homepage"/>
+      <meta name="author" content="fured"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+      <link href="/static/css/bootstrap-table.min.css" rel="stylesheet">
+      <link href="/static/css/bootstrap-select.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row-fluid clearfix">
+        <div class="col-md-12 column">
+          <nav class="navbar navbar-default" role="navigation">
+			<div class="navbar-header">
+              <a class="navbar-brand" href="/">AnsibleUI</a>
+			</div>
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			  <ul class="nav navbar-nav nav-tabs">
+			    <li class="active">
+			      <a href="#taskset" data-toggle="tab">任务集</a>
+			    </li>
+			    <li>
+			      <a onclick="toinventory()" href="#inventory" data-toggle="tab">主机清单</a>
+				</li>
+				<li>
+				  <a onclick="toplaybook()" href="#playbook" data-toggle="tab">剧本</a>
+				</li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <div class="row-fluid clearfix">
+        <div class="col-md-12 column">
+          <div id="myTab" class="tab-content">
+            <div class="tab-pane fade in active" id="taskset">
+              <div class="btn-group btn-group-md">
+                <button class="btn btn-default" type="button" id="add_taskset"><em class="glyphicon glyphicon-plus-sign"></em> 增加任务集</button>
+                <button class="btn btn-default" type="button" id="ref_packages" ><em class="glyphicon glyphicon-refresh"></em> 更新包</button>
+              </div>
+              <div>
+                <table class="table table-striped table-hover" id="taskset_table"></table>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="inventory">
+			  <div class="btn-group btn-group-md">
+			    <button class="btn btn-default" type="button" id="add_host"><em class="glyphicon glyphicon-plus-sign"></em> 新增主机</button>
+				<button class="btn btn-default" type="button" id="add_host_group"><em class="glyphicon glyphicon-plus-sign"></em> 新增父主机组</button>
+                <button class="btn btn-default" type="button" id="update_host_file"><em class="glyphicon glyphicon-refresh"></em> 更新主机清单文件</button>
+                <button class="btn btn-default" type="button" id="update_group_file"><em class="glyphicon glyphicon-refresh"></em> 更新主机组清单文件</button>
+              </div>
+              <div>
+              <table class="table table-striped table-hover" id="hosts_group_table"></table>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="playbook">
+              <div class="btn-group btn-group-md">
+			    <button class="btn btn-default" type="button" id="register_yml_file"><em class="glyphicon glyphicon-plus-sign"></em> 注册playbook</button>
+              </div>
+              <div>
+                <table class="table table-striped table-hover" id="register_playbook"></table>
+              </div>
+           </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 增加任务集的模态框 -->
+    <div class="modal fade" id="addmodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width:50%">
+          <div class="modal-content">
+             <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增任务集</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" id="add_taskset_form">
+                    <div class="form-group">
+                         <select id="packagetimerange" class="form-control" style = "width:20%;"></select>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-inline">
+                        <label for="tasksetname" class="col-md-2">任务集名</label>
+                        <input type="name" class="form-control" id="tasksetname"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-inline">
+                            <div class="col-md-8">
+                            <button type="button" id="con_add_task" class="btn btn-default btn-primary">继续增加任务</button>
+                            <button type="button" id="del_task" class="btn btn-default btn-primary">删除任务</button>
+                            </div>
+                            <div class="col-md-4">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" id="commit_taskset">提交</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="addtasks" class="form-group">
+                        <div class="form-inline">
+                            <label for="task_name" class="col-md-2">任务名</label>
+                            <input type="name" class="form-control" id="task_name"/>
+                        </div>
+                        <div class="form-inline">
+                            <label class="col-md-2">剧本</label>
+                            <select class="form-control" id="task_p_type" style = "width:15%;" onchange="get_task_p_projects(this)"></select>
+                            <select class="form-control" id="task_p_project" style = "width:20%;" onchange="get_task_p_names(this)"></select>
+                            <select class="form-control" id="task_p_name" style = "width:30%;"></select>
+                        </div>
+                        <div class="form-inline">
+                            <label for="task_package" class="col-md-2">代码包</label>
+                            <select class="form-control" style = "width:80%;"  id="task_package"></select>
+                        </div>
+                        <div class="form-inline">
+                            <label class="col-md-2">执行机</label>
+                            <select class="form-control" id="task_inventory_type" style = "width:15%;" onchange="get_task_inventorys(this)"></select>
+                            <select class="form-control" id="task_inventory" style = "width:40%;"></select>
+                        </div>
+                        <div class="form-inline">
+                            <label for="task_exeorder" class="col-md-2">执行顺序</label>
+                            <input type="text" class="form-control" id="task_exeorder">
+                        </div>
+                    </div>
+                </form>
+            </div>
+         </div>
+       </div>
+     </div>
+
+    <!-- 增加主机的模态框 -->
+    <div class="modal fade" id="addhostmodal" tabindex="1" role="dialog" aria-labelledby="myModalLabel_a" aria-hidden="true">
+                 <div class="modal-dialog" style="width:50%">
+                   <div class="modal-content">
+                      <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                          <h4 class="modal-title" id="myModalLabel_a">新增主机</h4>
+                      </div>
+                      <div class="modal-body">
+                         <form role="form" id="add_host_form">
+				           <div class="form-group">
+				               <label for="add_host_name" class="col-md-2">主机名</label>
+                               <input type="name" class="form-control" id="add_host_name"/>
+				           </div>
+				           <div class="form-group">
+				               <label for="add_host_ip" class="col-md-2">主机地址</label>
+                               <input type="text" class="form-control" id="add_host_ip"/>
+				           </div>
+				           <div class="form-group">
+				               <label for="add_host_user" class="col-md-2">用户名</label>
+                               <input type="text" class="form-control" id="add_host_user"/>
+				           </div>
+				           <div class="form-group">
+				               <label for="add_host_port" class="col-md-2">端口</label>
+                               <input type="text" class="form-control" id="add_host_port"/>
+				           </div>
+				           <div class="form-group">
+				               <label for="add_host_os" class="col-md-2">操作系统</label>
+                               <input type="text" class="form-control" id="add_host_os"/>
+				           </div>
+				           <div class="form-group">
+				               <label for="add_host_c_group" class="col-md-2">主机组</label>
+                              <input type="text" class="form-control" id="add_host_c_group"/>
+				          </div>
+				          <div class="form-group">
+				               <label for="add_host_commit" class="col-md-2">备注</label>
+                               <input type="text" class="form-control" id="add_host_commit"/>
+				          </div>
+				        </form>
+                    </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				        <button type="button" class="btn btn-primary" id="commit_addhost">提交</button>
+                    </div>
+                 </div>
+                 </div>
+               </div>
+    <!-- 显示执行日志/检查日志的模态框 -->
+    <div class="modal fade" id="logmodel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+       <div class="modal-dialog" style="width:50%">
+         <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">执行日志</h4>
+            </div>
+            <div class="modal-body">
+                <textarea id="logscroll" class="form-control" rows="30" readonly="true" style="color: white; background-color: #000;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+         </div>
+       </div>
+     </div>
+
+    <!-- 注册剧本的模态框 -->
+    <div class="modal fade" id="registerymlmodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+       <div class="modal-dialog" style="width:35%">
+         <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">注册Playbook</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" id="register_yml_form">
+				  <div class="form-group">
+				      <label for="playbook_name" class="col-md-2">文件名</label>
+                      <input type="name" class="form-control" style="width:30%" id="playbook_name"/>
+				  </div>
+				  <div class="form-group">
+				      <label for="playbook_project_type" class="col-md-2">所属项目类型</label>
+                      <select class="form-control" id="playbook_project_type" style="width:20%">
+					    <option value="projects">projects</option>
+						<option value="softs">softs</option>
+					  </select>
+				  </div>
+				  <div class="form-group">
+				      <label for="playbook_project_name" class="col-md-2">所属项目</label>
+                      <input type="name" class="form-control" style="width:30%" id="playbook_project_name"/>
+				  </div>
+				  <div class="form-group">
+				      <label for="playbook_impact" class="col-md-2">作用</label>
+                      <input type="name" class="form-control" style="width:30%" id="playbook_impact"/>
+				  </div>
+				  <div class="form-group">
+				      <label for="playbook_author" class="col-md-2">作者</label>
+                      <input type="name" style="width:20%" class="form-control" id="playbook_author"/>
+				  </div>
+				</form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-primary" id="commit_registeryml">提交</button>
+            </div>
+         </div>
+       </div>
+     </div>
+
+    <!-- 增加主机组的模态框 -->
+	<div class="modal fade" id="addgroupmodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+       <div class="modal-dialog" style="width:50%">
+         <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增主机组</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" id="add_host_form">
+				  <div class="form-group">
+				      <label for="add_group_name" class="col-md-2">主机组名</label>
+                      <input type="name" class="form-control" id="add_group_name"/>
+				  </div>
+				  <div class="form-group">
+                      <div class="form-inline">
+				      <label for="add_host_ip" class="col-md-2">子主机组</label>
+                      <select class="selectpicker right" multiple data-header="选择子主机组" id="childgroup" title="选择包含的子主机组">
+                      </select>
+                  </div>
+				  </div>
+				</form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="commit_addgroup">提交</button>
+            </div>
+         </div>
+       </div>
+     </div>
+
+    <!-- 显示剧本内容的模态框 -->
+    <div class="modal fade" id="playbookcontent" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+         <div class="modal-dialog" style="width:50%">
+              <div class="modal-content">
+                  <div class="modal-header">
+                       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                       <h4 class="modal-title" id="myModalLabel">文件详情</h4>
+                  </div>
+                  <div class="modal-body">
+                      <textarea id="ymlcontent" class="form-control" rows="30"></textarea>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+              </div>
+         </div>
+     </div>
+
+    <!-- 确认操作/取消操作的模态框 -->
+    <div class="modal fade" id="confirmmodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+         <div class="modal-dialog">
+              <div class="modal-content">
+                  <div class="modal-header">
+                       <h4 class="modal-title" id="myModalLabel">提示</h4>
+                  </div>
+                  <div class="modal-body">
+                      <p id="confirm_info"></p>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                      <button type="button" class="btn btn-primary" id="confirm_button">确认</button>
+                  </div>
+             </div>
+         </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <!--<script src="/static/js/jquery.js"></script>-->
+    <script src="/static/js/bootstrap-table.min.js"></script>
+    <script src="/static/js/bootstrap-select.min.js"></script>
+    <script src="/static/js/taskset-table.js"></script>
+    <script src="/static/js/taskset-other.js"></script>
+    <script src="/static/js/playbook.js"></script>
+    <script src="/static/js/inventory.js"></script>
+  </body>
+</html>
+
